@@ -1,0 +1,172 @@
+openapi: 3.0.3
+info:
+  title: API Artículos - Apoteca
+  description: |
+    API REST para consultar archivos de artículos APOTECA.
+    
+    ## Características
+    - ✅ Obtener el archivo más reciente de artículos automáticamente
+    - ✅ Respuestas JSON estructuradas y consistentes
+    
+    ## Autenticación
+    Esta API no requiere autenticación para las consultas públicas.
+    
+    **⚠️ IMPORTANTE - Versión Beta:**
+    - **Versión actual (1.0.0):** Sin autenticación
+    - **Versión 1.1 (Próximamente):** Se implementará validación por token de seguridad o por cliente
+    - **Recomendación:** Preparar las aplicaciones para la futura implementación de autenticación
+    
+    ## Rate Limiting
+    Se recomienda no hacer más de 10 peticiones por minuto.
+    
+    ## Soporte
+    Para soporte técnico: sistemas@innoverse.es
+  version: 1.0.0
+  contact:
+    name: Sistema de Apoteca
+    email: sistemas@innoverse.es
+
+servers:
+  - url: https://wsapi.innoverse.es/articulos
+    description: Servidor de producción
+
+
+paths:
+  /:
+    get:
+      summary: Obtener artículos
+      description: |
+        Obtiene el archivo más reciente de artículos y su contenido completo.
+        
+        Este endpoint devuelve:
+        - Lista completa de artículos con sus datos básicos
+        - Solo incluye los campos: IdArticu, Descripcion, StockActual
+        
+        **Nota:** Este es el único endpoint funcional actualmente.
+      operationId: obtenerArticulos
+      tags:
+        - Artículos
+      responses:
+        '200':
+          description: Artículos obtenidos correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArticulosResponse'
+              examples:
+                success:
+                  summary: Respuesta exitosa
+                  value:
+                    articulo:
+                      - idArticu: "000000"
+                        descripcion: "SPD 2 SEMANAS"
+                        stockActual: 0
+                      - idArticu: "000001"
+                        descripcion: "ALCOHOL BORICADO A SATURACION (5%) 30 ML SOLUCION OTICA (PO)"
+                        stockActual: 0
+                      - idArticu: "000002"
+                        descripcion: "ALCOHOL BORICADO A SATURACION (5%) 50 ML SOLUCION OTICA (PO)"
+                        stockActual: 0
+                      - idArticu: "000003"
+                        descripcion: "ACOFAR ETIQUETA VERDE"
+                        stockActual: 0
+                      - idArticu: "000031"
+                        descripcion: "MINOXIDILO 2MG CAPSULAS"
+                        stockActual: 1
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                noFiles:
+                  summary: No se encontraron archivos
+                  value:
+                    error: true
+                    message: "No se encontraron archivos de artículos en la carpeta"
+                tokenError:
+                  summary: Error de token
+                  value:
+                    error: true
+                    message: "Error al renovar access token"
+
+components:
+  schemas:
+    Articulo:
+      type: object
+      required:
+        - idArticu
+        - descripcion
+        - stockActual
+      properties:
+        idArticu:
+          type: string
+          description: ID único del artículo (formato de 6 dígitos)
+          example: "000000"
+          pattern: '^[0-9]{6}$'
+        descripcion:
+          type: string
+          description: Descripción del producto
+          example: "SPD 2 SEMANAS"
+        stockActual:
+          type: integer
+          description: Cantidad en stock
+          minimum: 0
+          example: 0
+
+    ArticulosResponse:
+      type: object
+      required:
+        - articulo
+      properties:
+        articulo:
+          type: array
+          description: Lista de artículos disponibles
+          items:
+            $ref: '#/components/schemas/Articulo'
+          example:
+            - idArticu: "000000"
+              descripcion: "SPD 2 SEMANAS"
+              stockActual: 0
+            - idArticu: "000001"
+              descripcion: "ALCOHOL BORICADO A SATURACION (5%) 30 ML SOLUCION OTICA (PO)"
+              stockActual: 0
+            - idArticu: "000031"
+              descripcion: "MINOXIDILO 2MG CAPSULAS"
+              stockActual: 1
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: boolean
+          description: Indica que hubo un error
+          example: true
+        message:
+          type: string
+          description: Mensaje de error descriptivo
+          example: "No se encontraron archivos de artículos en la carpeta"
+
+  securitySchemes:
+    # No se requiere autenticación para esta API (versión 1.0.0)
+    NoAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: |
+        Esta API no requiere autenticación en la versión actual (1.0.0).
+        
+        **⚠️ IMPORTANTE:** En la versión 1.1 se implementará autenticación por token.
+        Se recomienda preparar las aplicaciones para esta futura implementación.
+
+security:
+  - NoAuth: []
+
+tags:
+  - name: Artículos
+    description: Operaciones relacionadas con la obtención de artículos
+
