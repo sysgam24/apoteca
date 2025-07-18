@@ -38,7 +38,7 @@ https://wsapi.innoverse.es/articulos
 ### Endpoint Principal
 
 ```http
-GET https://wsapi.innoverse.es/articulos/
+GET https://wsapi.innoverse.es/articulos
 ```
 
 ### Ejemplo de Petición
