@@ -7,6 +7,9 @@ info:
     ## Características
     - ✅ Obtener el archivo más reciente de artículos automáticamente
     - ✅ Respuestas JSON estructuradas y consistentes
+    - ✅ Consulta por farmacia específica (idFarm)
+    - ✅ Consulta por artículo específico (idArticu)
+    - ✅ Información de stock en robot
     
     ## Autenticación
     Esta API no requiere autenticación para las consultas públicas.
@@ -27,12 +30,12 @@ info:
     email: sistemas@innoverse.es
 
 servers:
-  - url: https://wsapi.innoverse.es/articulos
+  - url: https://wsapi.innoverse.es
     description: Servidor de producción
 
 
 paths:
-  /:
+  /articulos:
     get:
       summary: Obtener artículos
       description: |
@@ -40,12 +43,38 @@ paths:
         
         Este endpoint devuelve:
         - Lista completa de artículos con sus datos básicos
-        - Solo incluye los campos: IdArticu, Descripcion, StockActual
+        - Información de farmacia (idFarm, nombreFarm)
+        - Información de stock en robot (EnRobot, stockRobot)
         
-        **Nota:** Este es el único endpoint funcional actualmente.
+        **Parámetros de consulta:**
+        - `idFarm` (opcional): ID de la farmacia (por defecto: 1)
+        - `idArticu` (opcional): ID específico del artículo a consultar
+        
+        **Ejemplos de uso:**
+        - `GET /articulos` - Obtener todos los artículos de la farmacia por defecto
+        - `GET /articulos?idFarm=2` - Obtener todos los artículos de la farmacia 2
+        - `GET /articulos?idFarm=1&idArticu=654571` - Obtener un artículo específico
       operationId: obtenerArticulos
       tags:
         - Artículos
+      parameters:
+        - name: idFarm
+          in: query
+          description: ID de la farmacia (por defecto 1)
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          example: 1
+        - name: idArticu
+          in: query
+          description: ID específico del artículo a consultar (formato de 6 dígitos)
+          required: false
+          schema:
+            type: string
+            pattern: '^[0-9]{6}$'
+          example: "654571"
       responses:
         '200':
           description: Artículos obtenidos correctamente
@@ -54,25 +83,49 @@ paths:
               schema:
                 $ref: '#/components/schemas/ArticulosResponse'
               examples:
-                success:
-                  summary: Respuesta exitosa
+                allArticles:
+                  summary: Todos los artículos (sin parámetros)
                   value:
+                    idFarm: 1
+                    nombreFarm: "Farmacia Prueba1"
                     articulo:
                       - idArticu: "000000"
                         descripcion: "SPD 2 SEMANAS"
                         stockActual: 0
+                        EnRobot: "T"
+                        stockRobot: 45
                       - idArticu: "000001"
                         descripcion: "ALCOHOL BORICADO A SATURACION (5%) 30 ML SOLUCION OTICA (PO)"
                         stockActual: 0
-                      - idArticu: "000002"
-                        descripcion: "ALCOHOL BORICADO A SATURACION (5%) 50 ML SOLUCION OTICA (PO)"
-                        stockActual: 0
-                      - idArticu: "000003"
-                        descripcion: "ACOFAR ETIQUETA VERDE"
-                        stockActual: 0
+                        EnRobot: "F"
+                        stockRobot: 0
                       - idArticu: "000031"
                         descripcion: "MINOXIDILO 2MG CAPSULAS"
                         stockActual: 1
+                        EnRobot: "T"
+                        stockRobot: 25
+                specificArticle:
+                  summary: Artículo específico (con idArticu)
+                  value:
+                    idFarm: 1
+                    nombreFarm: "Farmacia Prueba1"
+                    articulo:
+                      - idArticu: "654571"
+                        descripcion: "ARTÍCULO ESPECÍFICO"
+                        stockActual: 10
+                        EnRobot: "T"
+                        stockRobot: 25
+                differentFarm:
+                  summary: Farmacia específica (con idFarm)
+                  value:
+                    idFarm: 2
+                    nombreFarm: "Farmacia Prueba2"
+                    articulo:
+                      - idArticu: "000000"
+                        descripcion: "SPD 2 SEMANAS"
+                        stockActual: 5
+                        EnRobot: "T"
+                        stockRobot: 30
         '500':
           description: Error interno del servidor
           content:
@@ -90,6 +143,13 @@ paths:
                   value:
                     error: true
                     message: "Error al renovar access token"
+                articleNotFound:
+                  summary: Artículo no encontrado
+                  value:
+                    idFarm: 1
+                    nombreFarm: "Farmacia Prueba1"
+                    articulo: []
+                    message: "Artículo no encontrado"
 
 components:
   schemas:
@@ -99,6 +159,8 @@ components:
         - idArticu
         - descripcion
         - stockActual
+        - EnRobot
+        - stockRobot
       properties:
         idArticu:
           type: string
@@ -114,12 +176,32 @@ components:
           description: Cantidad en stock
           minimum: 0
           example: 0
+        EnRobot:
+          type: string
+          description: Indica si el artículo está en robot ("T" para sí, "F" para no)
+          enum: ["T", "F"]
+          example: "T"
+        stockRobot:
+          type: integer
+          description: Cantidad en stock del robot (0 si EnRobot es "F")
+          minimum: 0
+          example: 45
 
     ArticulosResponse:
       type: object
       required:
+        - idFarm
+        - nombreFarm
         - articulo
       properties:
+        idFarm:
+          type: integer
+          description: ID de la farmacia consultada
+          example: 1
+        nombreFarm:
+          type: string
+          description: Nombre de la farmacia consultada
+          example: "Farmacia Prueba1"
         articulo:
           type: array
           description: Lista de artículos disponibles
@@ -129,12 +211,22 @@ components:
             - idArticu: "000000"
               descripcion: "SPD 2 SEMANAS"
               stockActual: 0
+              EnRobot: "T"
+              stockRobot: 45
             - idArticu: "000001"
               descripcion: "ALCOHOL BORICADO A SATURACION (5%) 30 ML SOLUCION OTICA (PO)"
               stockActual: 0
+              EnRobot: "F"
+              stockRobot: 0
             - idArticu: "000031"
               descripcion: "MINOXIDILO 2MG CAPSULAS"
               stockActual: 1
+              EnRobot: "T"
+              stockRobot: 25
+        message:
+          type: string
+          description: Mensaje informativo (solo cuando no se encuentra un artículo específico)
+          example: "Artículo no encontrado"
 
     ErrorResponse:
       type: object
@@ -169,4 +261,3 @@ security:
 tags:
   - name: Artículos
     description: Operaciones relacionadas con la obtención de artículos
-
