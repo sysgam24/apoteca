@@ -44,14 +44,14 @@ GET https://wsapi.innoverse.es/articulos
 ### Ejemplo de Petición
 
 ```bash
-curl -X GET "https://wsapi.innoverse.es/articulos/" \
+curl -X GET "https://wsapi.innoverse.es/articulos" \
      -H "Accept: application/json"
 ```
 
 ### Ejemplo con JavaScript
 
 ```javascript
-fetch('https://wsapi.innoverse.es/articulos/')
+fetch('https://wsapi.innoverse.es/articulos')
   .then(response => response.json())
   .then(data => {
     console.log('Artículos:', data.articulo);
@@ -66,7 +66,7 @@ fetch('https://wsapi.innoverse.es/articulos/')
 ```python
 import requests
 
-response = requests.get('https://wsapi.innoverse.es/articulos/')
+response = requests.get('https://wsapi.innoverse.es/articulos')
 if response.status_code == 200:
     articulos = response.json()['articulo']
     for articulo in articulos:
@@ -155,7 +155,7 @@ Obtiene el archivo más reciente de artículos con información completa.
 ### Filtrar artículos con stock
 
 ```javascript
-fetch('https://wsapi.innoverse.es/articulos/')
+fetch('https://wsapi.innoverse.es/articulos')
   .then(response => response.json())
   .then(data => {
     const articulosConStock = data.articulo.filter(
@@ -169,7 +169,7 @@ fetch('https://wsapi.innoverse.es/articulos/')
 
 ```javascript
 function buscarArticulo(id) {
-  return fetch('https://wsapi.innoverse.es/articulos/')
+  return fetch('https://wsapi.innoverse.es/articulos')
     .then(response => response.json())
     .then(data => {
       return data.articulo.find(
@@ -191,7 +191,7 @@ buscarArticulo('000031').then(articulo => {
 ### Obtener estadísticas de stock
 
 ```javascript
-fetch('https://wsapi.innoverse.es/articulos/')
+fetch('https://wsapi.innoverse.es/articulos')
   .then(response => response.json())
   .then(data => {
     const stats = data.articulo.reduce((acc, articulo) => {
