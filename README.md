@@ -41,15 +41,29 @@ https://wsapi.innoverse.es/articulos
 GET https://wsapi.innoverse.es/articulos
 ```
 
-### Ejemplo de Petición
+### Ejemplos de Petición
 
+**Obtener todos los artículos:**
 ```bash
 curl -X GET "https://wsapi.innoverse.es/articulos" \
      -H "Accept: application/json"
 ```
 
+**Obtener artículos de una farmacia específica:**
+```bash
+curl -X GET "https://wsapi.innoverse.es/articulos?idFarm=2" \
+     -H "Accept: application/json"
+```
+
+**Obtener un artículo específico:**
+```bash
+curl -X GET "https://wsapi.innoverse.es/articulos?idFarm=1&idArticu=654571" \
+     -H "Accept: application/json"
+```
+
 ### Ejemplo con JavaScript
 
+**Obtener todos los artículos:**
 ```javascript
 fetch('https://wsapi.innoverse.es/articulos')
   .then(response => response.json())
@@ -61,8 +75,21 @@ fetch('https://wsapi.innoverse.es/articulos')
   });
 ```
 
+**Obtener un artículo específico:**
+```javascript
+fetch('https://wsapi.innoverse.es/articulos?idFarm=1&idArticu=654571')
+  .then(response => response.json())
+  .then(data => {
+    console.log('Artículo específico:', data.articulo[0]);
+  })
+  .catch(error => {
+    console.error('Error:', error);
+  });
+```
+
 ### Ejemplo con Python
 
+**Obtener todos los artículos:**
 ```python
 import requests
 
@@ -75,27 +102,70 @@ else:
     print(f"Error: {response.status_code}")
 ```
 
+**Obtener un artículo específico:**
+```python
+import requests
+
+response = requests.get('https://wsapi.innoverse.es/articulos?idFarm=1&idArticu=654571')
+if response.status_code == 200:
+    data = response.json()
+    if data['articulo']:
+        articulo = data['articulo'][0]
+        print(f"ID: {articulo['idArticu']} - {articulo['descripcion']}")
+    else:
+        print("Artículo no encontrado")
+else:
+    print(f"Error: {response.status_code}")
+```
+
 ## 🔗 Endpoints
 
 ### GET / - Obtener Artículos
 
 Obtiene el archivo más reciente de artículos con información completa.
 
-**Parámetros:** Ninguno
+**Parámetros:**
+- `idFarm` (opcional): ID de la farmacia (por defecto: 1)
+- `idArticu` (opcional): ID específico del artículo a consultar
 
 **Respuesta exitosa (200):**
+
+**Sin parámetros (todos los artículos):**
 ```json
 {
+  "idFarm": 1,
+  "nombreFarm": "Farmacia Prueba1",
   "articulo": [
     {
       "idArticu": "000000",
       "descripcion": "SPD 2 SEMANAS",
-      "stockActual": 0
+      "stockActual": 0,
+      "EnRobot": "T",
+      "stockRobot": 45
     },
     {
       "idArticu": "000001",
       "descripcion": "ALCOHOL BORICADO A SATURACION (5%) 30 ML SOLUCION OTICA (PO)",
-      "stockActual": 0
+      "stockActual": 0,
+      "EnRobot": "F",
+      "stockRobot": 0
+    }
+  ]
+}
+```
+
+**Con parámetros específicos:**
+```json
+{
+  "idFarm": 2,
+  "nombreFarm": "Farmacia Prueba2",
+  "articulo": [
+    {
+      "idArticu": "654571",
+      "descripcion": "ARTÍCULO ESPECÍFICO",
+      "stockActual": 10,
+      "EnRobot": "T",
+      "stockRobot": 25
     }
   ]
 }
@@ -107,14 +177,21 @@ Obtiene el archivo más reciente de artículos con información completa.
 
 | Campo | Tipo | Descripción | Ejemplo |
 |-------|------|-------------|---------|
+| `idFarm` | integer | ID de la farmacia | `1` |
+| `nombreFarm` | string | Nombre de la farmacia | `"Farmacia Prueba1"` |
 | `idArticu` | string | ID único del artículo (6 dígitos) | `"000000"` |
 | `descripcion` | string | Descripción del producto | `"SPD 2 SEMANAS"` |
 | `stockActual` | integer | Cantidad en stock | `0` |
+| `EnRobot` | string | Indica si está en robot ("T" o "F") | `"T"` |
+| `stockRobot` | integer | Stock disponible en robot | `45` |
 
 ### Validaciones
 
+- `idFarm`: Debe ser un número entero mayor a 0 (por defecto: 1)
 - `idArticu`: Debe ser exactamente 6 dígitos numéricos
 - `stockActual`: Debe ser un número entero mayor o igual a 0
+- `EnRobot`: Debe ser "T" o "F"
+- `stockRobot`: Debe ser un número entero mayor o igual a 0
 
 ## ⚠️ Manejo de Errores
 
@@ -133,6 +210,17 @@ Obtiene el archivo más reciente de artículos con información completa.
 {
   "error": true,
   "message": "Error al renovar access token"
+}
+```
+
+### Respuesta cuando no se encuentra un artículo específico
+
+```json
+{
+  "idFarm": 1,
+  "nombreFarm": "Farmacia Prueba1",
+  "articulo": [],
+  "message": "Artículo no encontrado"
 }
 ```
 
@@ -167,6 +255,27 @@ fetch('https://wsapi.innoverse.es/articulos')
 
 ### Buscar artículo por ID
 
+**Método 1: Usando parámetro de URL (recomendado)**
+```javascript
+function buscarArticulo(id, idFarm = 1) {
+  return fetch(`https://wsapi.innoverse.es/articulos?idFarm=${idFarm}&idArticu=${id}`)
+    .then(response => response.json())
+    .then(data => {
+      return data.articulo.length > 0 ? data.articulo[0] : null;
+    });
+}
+
+// Uso
+buscarArticulo('654571', 1).then(articulo => {
+  if (articulo) {
+    console.log('Artículo encontrado:', articulo);
+  } else {
+    console.log('Artículo no encontrado');
+  }
+});
+```
+
+**Método 2: Filtrando en el cliente**
 ```javascript
 function buscarArticulo(id) {
   return fetch('https://wsapi.innoverse.es/articulos')
@@ -197,12 +306,31 @@ fetch('https://wsapi.innoverse.es/articulos')
     const stats = data.articulo.reduce((acc, articulo) => {
       acc.totalArticulos++;
       acc.stockTotal += articulo.stockActual;
+      acc.stockRobotTotal += articulo.stockRobot;
       if (articulo.stockActual > 0) acc.conStock++;
+      if (articulo.EnRobot === "T") acc.enRobot++;
       return acc;
-    }, { totalArticulos: 0, stockTotal: 0, conStock: 0 });
+    }, { totalArticulos: 0, stockTotal: 0, stockRobotTotal: 0, conStock: 0, enRobot: 0 });
     
     console.log('Estadísticas:', stats);
   });
+```
+
+### Consultar artículos por farmacia
+
+```javascript
+function obtenerArticulosPorFarmacia(idFarm) {
+  return fetch(`https://wsapi.innoverse.es/articulos?idFarm=${idFarm}`)
+    .then(response => response.json())
+    .then(data => {
+      return data.articulo;
+    });
+}
+
+// Uso
+obtenerArticulosPorFarmacia(2).then(articulos => {
+  console.log(`Artículos de la farmacia 2:`, articulos);
+});
 ```
 
 ## 📞 Soporte
