@@ -48,19 +48,19 @@ Para obtener acceso a la API, debes registrarte en el sistema:
    - Motivo de Uso (opcional)
 3. **Espera a que un administrador active tu cuenta** (puede tomar hasta 24 horas)
 4. Una vez activado, recibirás un token JWT único por email
-5. Tu información será visible en el panel de administración
+5. Tu información será visible en el panel de administración y podra copiar y guardar el token generado.
 
 **⚠️ Importante:** Tu cuenta permanecerá inactiva hasta que un administrador la apruebe. Este proceso puede tomar hasta 24 horas hábiles.
 
 ### Obtención del Token
 
-Una vez que tu cuenta sea activada por un administrador, recibirás un token JWT por email que debes incluir en todas las peticiones a la API:
+Una vez que tu cuenta sea activada por un administrador, podras consumir la api :
 
 ```http
 Authorization: Bearer tu_token_jwt_aqui
 ```
 
-**📧 Notificación:** El token será enviado automáticamente a tu email registrado una vez que tu cuenta sea activada.
+**📧 Notificación:** El token será enviado automáticamente a tu email registrado una vez que tu cuenta sea activada. (Proximamente)
 
 ## 🚀 Instalación
 
